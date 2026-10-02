@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080910">
+  <title>ADEX VOICE | AI Voice Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #080910;
+      --panel: rgba(20, 20, 34, .88);
+      --line: rgba(171, 150, 255, .18);
+      --muted: #a5a3b8;
+      --violet: #a78bfa;
+      --mint: #8af0cc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--ink); color: #f7f5ff; font-family: "DM Sans", sans-serif; }
+    h1, h2, button, select { font-family: "Space Grotesk", sans-serif; }
+    .backdrop {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% -20%, rgba(113, 75, 195, .24), transparent 42%),
+                  radial-gradient(ellipse at 100% 80%, rgba(52, 139, 132, .10), transparent 34%),
+                  linear-gradient(145deg, #080910 15%, #0d0c17 60%, #090d13);
+    }
+    .noise { background-image: radial-gradient(rgba(255,255,255,.045) .7px, transparent .7px); background-size: 7px 7px; }
+    .glass { background: linear-gradient(145deg, rgba(27, 24, 44, .95), rgba(15, 17, 28, .96)); border: 1px solid var(--line); box-shadow: 0 0 0 1px rgba(255,255,255,.015), 0 28px 90px rgba(0,0,0,.42), 0 0 65px rgba(120,88,218,.09); }
+    .control { background: rgba(8, 9, 16, .78); border: 1px solid rgba(174,164,210,.19); transition: border-color .2s ease, box-shadow .2s ease; }
+    .control:focus { outline: none; border-color: rgba(167,139,250,.8); box-shadow: 0 0 0 3px rgba(167,139,250,.12); }
+    .action { transition: transform .18s ease, filter .18s ease, opacity .18s ease; }
+    .action:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .action:disabled { cursor: not-allowed; opacity: .48; }
+    .modal-backdrop { background: rgba(3, 4, 10, .78); backdrop-filter: blur(12px); }
+    .ad-grid { background-color: #11121d; background-image: linear-gradient(rgba(167,139,250,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,.06) 1px, transparent 1px); background-size: 24px 24px; }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .enter { animation: rise .55s ease-out both; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <div class="backdrop relative isolate overflow-hidden">
+    <div class="noise pointer-events-none absolute inset-0 -z-10 opacity-20"></div>
+    <main class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-5 py-8 sm:px-8 sm:py-12">
+      <header class="enter mb-8 flex items-center justify-between gap-4" style="animation-delay: .04s">
+        <a href="#" class="flex items-center gap-3 text-inherit no-underline" aria-label="ADEX VOICE home">
+          <span class="grid h-11 w-11 place-items-center rounded-xl border border-violet-300/25 bg-violet-300/10 text-violet-200 shadow-[0_0_28px_rgba(167,139,250,.15)]"><i class="fa-solid fa-wave-square" aria-hidden="true"></i></span>
+          <span class="font-['Space_Grotesk'] text-lg font-bold tracking-[.08em]">ADEX <span class="text-violet-300">VOICE</span></span>
+        </a>
+        <span class="inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-300/[.07] px-3 py-2 text-xs font-medium text-violet-100/90 sm:px-4">
+          <i class="fa-solid fa-circle-play text-[10px] text-emerald-300" aria-hidden="true"></i>
+          Watch ads and generate voice
+        </span>
+      </header>
+
+      <section class="enter mx-auto w-full max-w-3xl" style="animation-delay: .12s" aria-labelledby="page-title">
+        <div class="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[.16em] text-emerald-200/80">Text to speech <span class="mx-1 text-violet-300">/</span> Studio</p>
+            <h1 id="page-title" class="text-3xl font-semibold tracking-tight sm:text-4xl">Give your words <span class="text-violet-300">a voice.</span></h1>
+          </div>
+          <span class="hidden items-center gap-2 pb-1 text-xs text-slate-400 sm:flex"><i class="fa-solid fa-bolt text-emerald-300" aria-hidden="true"></i> Powered by Edge TTS</span>
+        </div>
+
+        <div class="glass rounded-2xl p-5 sm:p-7">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <label for="text-input" class="text-sm font-semibold text-slate-100">Your script</label>
+            <span id="char-count" class="rounded-md border border-white/10 bg-black/20 px-2.5 py-1 text-xs tabular-nums text-slate-300" aria-live="polite">0 / 300 characters</span>
+          </div>
+          <textarea id="text-input" class="control min-h-40 w-full resize-y rounded-xl px-4 py-3.5 text-[15px] leading-7 text-slate-100 placeholder:text-slate-600" maxlength="300" placeholder="Type or paste the words you want to hear..." aria-describedby="limit-label" spellcheck="true"></textarea>
+          <div class="mt-2 flex items-center justify-between gap-3 text-xs">
+            <span id="limit-label" class="text-slate-400">Limit: 300 Chars</span>
+            <span id="text-hint" class="text-slate-500">Your text stays in this session.</span>
+          </div>
+
+          <div class="my-6 h-px bg-gradient-to-r from-transparent via-violet-300/20 to-transparent"></div>
+
+          <div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label for="language-select" class="mb-2 block text-xs font-semibold uppercase tracking-[.1em] text-slate-400">Language</label>
+              <select id="language-select" class="control h-12 w-full rounded-lg px-3 text-sm text-slate-100" disabled><option>Loading voices...</option></select>
+            </div>
+            <div>
+              <label for="gender-select" class="mb-2 block text-xs font-semibold uppercase tracking-[.1em] text-slate-400">Gender</label>
+              <select id="gender-select" class="control h-12 w-full rounded-lg px-3 text-sm text-slate-100" disabled>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+            <div>
+              <label for="voice-select" class="mb-2 block text-xs font-semibold uppercase tracking-[.1em] text-slate-400">Voice</label>
+              <select id="voice-select" class="control h-12 w-full rounded-lg px-3 text-sm text-slate-100" disabled><option>Loading voices...</option></select>
+            </div>
+          </div>
+          <p id="voice-error" class="mb-4 hidden text-sm text-rose-300" role="alert"></p>
+
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <button id="preview-button" type="button" class="action inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-violet-300/30 bg-violet-300/[.08] px-4 py-3 text-sm font-semibold text-violet-100 hover:bg-violet-300/[.13]" disabled>
+              <i class="fa-solid fa-play text-xs" aria-hidden="true"></i><span>Preview Voice</span>
+            </button>
+            <button id="download-button" type="button" class="action inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_8px_28px_rgba(116,82,209,.25)] hover:from-violet-400 hover:to-indigo-400" disabled>
+              <i class="fa-solid fa-circle-play text-xs" aria-hidden="true"></i><span>Watch 2 Ads &amp; Download MP3</span>
+            </button>
+          </div>
+
+          <div id="audio-panel" class="mt-5 hidden rounded-xl border border-emerald-200/15 bg-emerald-300/[.045] p-4">
+            <div class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[.1em] text-emerald-200"><i class="fa-solid fa-headphones" aria-hidden="true"></i> Voice preview</div>
+            <audio id="audio-player" class="w-full" controls preload="none"></audio>
+          </div>
+          <p id="request-error" class="mt-4 hidden text-sm text-rose-300" role="alert"></p>
+        </div>
+        <p class="mt-4 text-center text-xs text-slate-500"><i class="fa-solid fa-lock mr-1 text-slate-600" aria-hidden="true"></i> Audio is generated on demand. No account required.</p>
+      </section>
+      <footer class="mt-auto pt-12 text-center text-[11px] text-slate-600">ADEX VOICE <span class="mx-1 text-slate-700">·</span> Free AI voice generation</footer>
+    </main>
+  </div>
+
+  <div id="ad-modal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4" role="presentation">
+    <section class="glass w-full max-w-lg rounded-2xl p-5 sm:p-7" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-copy">
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <p id="ad-step" class="mb-2 text-xs font-semibold uppercase tracking-[.15em] text-emerald-200">Ad 1 of 2</p>
+          <h2 id="modal-title" class="text-xl font-semibold">A quick pause, then your audio.</h2>
+        </div>
+        <button id="close-modal" type="button" class="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-400 transition hover:bg-white/5 hover:text-white" aria-label="Close ad dialog"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <p id="modal-copy" class="mb-4 text-sm leading-6 text-slate-400">This demo simulates an ad watch. No advertising network is connected.</p>
+      <div class="ad-grid relative grid min-h-48 place-items-center overflow-hidden rounded-xl border border-violet-300/15 p-6 text-center">
+        <div class="relative">
+          <span class="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl border border-violet-300/20 bg-violet-300/10 text-violet-200"><i class="fa-solid fa-rectangle-ad" aria-hidden="true"></i></span>
+          <p class="text-sm font-semibold text-slate-200">Advertisement space</p>
+          <p class="mt-1 text-xs text-slate-500">Adsterra / Monetag placement</p>
+        </div>
+        <span class="absolute right-3 top-3 rounded border border-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">Ad</span>
+      </div>
+      <div class="mt-5 flex items-center justify-between gap-4">
+        <span id="timer-status" class="inline-flex items-center gap-2 text-sm text-slate-300" aria-live="polite"><i class="fa-regular fa-clock text-violet-300" aria-hidden="true"></i><span>Watch for 5 seconds</span></span>
+        <button id="ad-action" type="button" class="action min-h-11 rounded-lg bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white" disabled>Wait 5s</button>
+      </div>
+      <p id="ad-error" class="mt-3 hidden text-sm text-rose-300" role="alert"></p>
+    </section>
+  </div>
+
+  <div id="toast" class="fixed bottom-5 left-1/2 z-[60] hidden -translate-x-1/2 items-center gap-2 rounded-xl border border-emerald-200/20 bg-[#131b1b] px-4 py-3 text-sm text-emerald-100 shadow-2xl" role="status" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span id="toast-message">Download ready. +300 characters unlocked.</span></div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+    const textInput = document.getElementById("text-input");
+    const charCount = document.getElementById("char-count");
+    const limitLabel = document.getElementById("limit-label");
+    const languageSelect = document.getElementById("language-select");
+    const genderSelect = document.getElementById("gender-select");
+    const voiceSelect = document.getElementById("voice-select");
+    const previewButton = document.getElementById("preview-button");
+    const downloadButton = document.getElementById("download-button");
+    const audioPanel = document.getElementById("audio-panel");
+    const audioPlayer = document.getElementById("audio-player");
+    const requestError = document.getElementById("request-error");
+    const voiceError = document.getElementById("voice-error");
+    const modal = document.getElementById("ad-modal");
+    const adStep = document.getElementById("ad-step");
+    const modalTitle = document.getElementById("modal-title");
+    const timerStatus = document.getElementById("timer-status");
+    const adAction = document.getElementById("ad-action");
+    const adError = document.getElementById("ad-error");
+    const toast = document.getElementById("toast");
+    const toastMessage = document.getElementById("toast-message");
+    let voices = [];
+    let characterLimit = 300;
+    let timerId = null;
+    let toastId = null;
+    let previewUrl = null;
+    let pendingDownload = null;
+
+    function updateCharacterCount() {
+      charCount.textContent = `${textInput.value.length} / ${characterLimit} characters`;
+      limitLabel.textContent = `Limit: ${characterLimit} Chars`;
+      textInput.maxLength = characterLimit;
+      updateActions();
+    }
+
+    function updateActions() {
+      const ready = textInput.value.trim().length > 0 && voiceSelect.value !== "";
+      previewButton.disabled = !ready;
+      downloadButton.disabled = !ready;
+    }
+
+    function localeName(locale, languageCode) {
+      try {
+        const language = new Intl.DisplayNames([navigator.language || "en"], { type: "language" }).of(languageCode);
+        const region = locale.split("-")[1];
+        const regionName = region ? new Intl.DisplayNames([navigator.language || "en"], { type: "region" }).of(region) : "";
+        return `${language}${regionName ? ` (${regionName})` : ` (${locale})`}`;
+      } catch {
+        return locale;
+      }
+    }
+
+    function renderLanguages() {
+      const locales = [...new Map(voices.map((voice) => [voice.locale, voice.language])).entries()]
+        .sort(([localeA], [localeB]) => localeA.localeCompare(localeB));
+      languageSelect.replaceChildren();
+      for (const [locale, language] of locales) {
+        const option = document.createElement("option");
+        option.value = locale;
+        option.textContent = localeName(locale, language);
+        languageSelect.append(option);
+      }
+      languageSelect.disabled = locales.length === 0;
+      genderSelect.disabled = locales.length === 0;
+      const sinhala = locales.find(([locale]) => locale.toLowerCase() === "si-lk");
+      if (sinhala) languageSelect.value = sinhala[0];
+      else if (locales.length) languageSelect.selectedIndex = 0;
+      renderVoiceOptions();
+    }
+
+    function renderVoiceOptions() {
+      const matching = voices.filter((voice) => voice.locale === languageSelect.value && voice.gender === genderSelect.value);
+      voiceSelect.replaceChildren();
+      for (const voice of matching) {
+        const option = document.createElement("option");
+        option.value = voice.shortName;
+        option.textContent = voice.friendlyName;
+        voiceSelect.append(option);
+      }
+      if (!matching.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No voices for this selection";
+        voiceSelect.append(option);
+      }
+      voiceSelect.disabled = matching.length === 0;
+      voiceError.classList.toggle("hidden", matching.length > 0);
+      voiceError.textContent = matching.length ? "" : "No voice found for this language and gender. Try another gender or language.";
+      updateActions();
+    }
+
+    async function loadVoices() {
+      try {
+        const response = await fetch(`${API_BASE}/voices`);
+        if (!response.ok) throw new Error("The voice service returned an error.");
+        voices = await response.json();
+        if (!voices.length) throw new Error("No voices are currently available.");
+        renderLanguages();
+      } catch (error) {
+        languageSelect.replaceChildren(new Option("Voices unavailable", ""));
+        voiceSelect.replaceChildren(new Option("Voices unavailable", ""));
+        voiceError.textContent = `${error.message} Start the backend at ${API_BASE}.`;
+        voiceError.classList.remove("hidden");
+        languageSelect.disabled = true;
+        genderSelect.disabled = true;
+        voiceSelect.disabled = true;
+      }
+    }
+
+    async function requestAudio() {
+      const text = textInput.value.trim();
+      const voice = voiceSelect.value;
+      if (!text || !voice) throw new Error("Enter some text and select a voice first.");
+      const response = await fetch(`${API_BASE}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice })
+      });
+      if (!response.ok) {
+        let message = "Audio generation failed.";
+        try { message = (await response.json()).detail || message; } catch { /* Keep the fallback message. */ }
+        throw new Error(message);
+      }
+      return response.blob();
+    }
+
+    function setBusy(busy, button, label) {
+      button.disabled = busy;
+      button.querySelector("span").textContent = busy ? label : button.dataset.label;
+    }
+
+    function showRequestError(message = "") {
+      requestError.textContent = message;
+      requestError.classList.toggle("hidden", !message);
+    }
+
+    async function previewVoice() {
+      showRequestError();
+      setBusy(true, previewButton, "Generating preview...");
+      try {
+        const blob = await requestAudio();
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(blob);
+        audioPlayer.src = previewUrl;
+        audioPanel.classList.remove("hidden");
+        await audioPlayer.play();
+      } catch (error) {
+        showRequestError(error.message || "Could not play the preview. Try again.");
+      } finally {
+        setBusy(false, previewButton);
+      }
+    }
+
+    function startAdTimer(adNumber) {
+      clearInterval(timerId);
+      let seconds = 5;
+      adStep.textContent = `Ad ${adNumber} of 2`;
+      modalTitle.textContent = adNumber === 1 ? "A quick pause, then your audio." : "One more quick pause.";
+      timerStatus.innerHTML = '<i class="fa-regular fa-clock text-violet-300" aria-hidden="true"></i><span>Watch for 5 seconds</span>';
+      adAction.disabled = true;
+      adAction.textContent = `Wait ${seconds}s`;
+      timerId = setInterval(() => {
+        seconds -= 1;
+        if (seconds > 0) {
+          adAction.textContent = `Wait ${seconds}s`;
+          return;
+        }
+        clearInterval(timerId);
+        timerId = null;
+        adAction.disabled = false;
+        if (adNumber === 1) {
+          adAction.textContent = "Next Ad →";
+          timerStatus.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-300" aria-hidden="true"></i><span>Ad 1 complete</span>';
+        } else {
+          adAction.textContent = "Download MP3 & Unlock +300 Chars";
+          timerStatus.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-300" aria-hidden="true"></i><span>All done. Your audio is ready.</span>';
+        }
+      }, 1000);
+    }
+
+    function openAds() {
+      showRequestError();
+      adError.textContent = "";
+      adError.classList.add("hidden");
+      pendingDownload = { text: textInput.value.trim(), voice: voiceSelect.value };
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+      startAdTimer(1);
+      document.getElementById("close-modal").focus();
+    }
+
+    function closeAds() {
+      clearInterval(timerId);
+      timerId = null;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      document.body.style.overflow = "";
+      pendingDownload = null;
+      adError.textContent = "";
+      adError.classList.add("hidden");
+      downloadButton.focus();
+    }
+
+    async function finishAds() {
+      if (adStep.textContent.startsWith("Ad 1")) {
+        startAdTimer(2);
+        return;
+      }
+      if (!pendingDownload) return;
+      const originalText = adAction.textContent;
+      adAction.disabled = true;
+      adAction.textContent = "Generating MP3...";
+      try {
+        const response = await fetch(`${API_BASE}/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(pendingDownload)
+        });
+        if (!response.ok) {
+          let message = "Audio generation failed.";
+          try { message = (await response.json()).detail || message; } catch { /* Keep the fallback message. */ }
+          throw new Error(message);
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "adex_voice.mp3";
+        document.body.append(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        characterLimit += 300;
+        updateCharacterCount();
+        closeAds();
+        toastMessage.textContent = `Download ready. +300 characters unlocked (${characterLimit} total).`;
+        toast.classList.remove("hidden");
+        toast.classList.add("flex");
+        clearTimeout(toastId);
+        toastId = setTimeout(() => { toast.classList.add("hidden"); toast.classList.remove("flex"); }, 4200);
+      } catch (error) {
+        adAction.disabled = false;
+        adAction.textContent = originalText;
+        adError.textContent = error.message || "Could not generate the download. Please try again.";
+        adError.classList.remove("hidden");
+      }
+    }
+
+    textInput.addEventListener("input", updateCharacterCount);
+    languageSelect.addEventListener("change", renderVoiceOptions);
+    genderSelect.addEventListener("change", renderVoiceOptions);
+    voiceSelect.addEventListener("change", updateActions);
+    previewButton.dataset.label = "Preview Voice";
+    previewButton.addEventListener("click", previewVoice);
+    downloadButton.addEventListener("click", openAds);
+    document.getElementById("close-modal").addEventListener("click", closeAds);
+    adAction.addEventListener("click", finishAds);
+    modal.addEventListener("click", (event) => { if (event.target === modal) closeAds(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !modal.classList.contains("hidden")) closeAds(); });
+    updateCharacterCount();
+    loadVoices();
+  </script>
+</body>
+</html>
