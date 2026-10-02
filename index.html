@@ -38,6 +38,12 @@
     .action:disabled { cursor: not-allowed; opacity: .48; }
     .modal-backdrop { background: rgba(3, 4, 10, .78); backdrop-filter: blur(12px); }
     .ad-grid { background-color: #11121d; background-image: linear-gradient(rgba(167,139,250,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,.06) 1px, transparent 1px); background-size: 24px 24px; }
+    .mobile-ad-slot { width: min(100%, 320px); min-height: 50px; overflow: hidden; }
+    .mobile-ad-slot iframe { display: block; max-width: 100%; margin-inline: auto; }
+    .banner-ad-300 { width: 300px; height: 250px; flex: 0 0 300px; overflow: hidden; }
+    @media (max-width: 359px) { .banner-ad-300 { transform: scale(.82); } }
+    @media (max-width: 320px) { .banner-ad-300 { transform: scale(.75); } }
+    @media (max-width: 300px) { .banner-ad-300 { transform: scale(.68); } }
     @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .enter { animation: rise .55s ease-out both; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
@@ -57,6 +63,19 @@
           Watch ads and generate voice
         </span>
       </header>
+
+      <div class="mobile-ad-slot enter mb-6 self-center sm:hidden" aria-label="Advertisement">
+        <script>
+          atOptions = {
+            'key' : '5e3f9bb98d0b6572fd7a08ecba540ac0',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script src="https://bicea.org/22/5e3f9bb98d0b6572fd7a08ecba540ac0"></script>
+      </div>
 
       <section class="enter mx-auto w-full max-w-3xl" style="animation-delay: .12s" aria-labelledby="page-title">
         <div class="mb-5 flex items-end justify-between gap-4">
@@ -114,6 +133,10 @@
           </div>
           <p id="request-error" class="mt-4 hidden text-sm text-rose-300" role="alert"></p>
         </div>
+        <div class="mt-6 flex justify-center overflow-hidden" aria-label="Advertisement">
+          <script async="async" data-cfasync="false" src="https://bicea.org/21/21adb641fcda0f53aef16633265346dd"></script>
+          <div id="container-21adb641fcda0f53aef16633265346dd"></div>
+        </div>
         <p class="mt-4 text-center text-xs text-slate-500"><i class="fa-solid fa-lock mr-1 text-slate-600" aria-hidden="true"></i> Audio is generated on demand. No account required.</p>
       </section>
       <footer class="mt-auto pt-12 text-center text-[11px] text-slate-600">ADEX VOICE <span class="mx-1 text-slate-700">·</span> Free AI voice generation</footer>
@@ -129,14 +152,21 @@
         </div>
         <button id="close-modal" type="button" class="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-400 transition hover:bg-white/5 hover:text-white" aria-label="Close ad dialog"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
-      <p id="modal-copy" class="mb-4 text-sm leading-6 text-slate-400">This demo simulates an ad watch. No advertising network is connected.</p>
-      <div class="ad-grid relative grid min-h-48 place-items-center overflow-hidden rounded-xl border border-violet-300/15 p-6 text-center">
-        <div class="relative">
-          <span class="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl border border-violet-300/20 bg-violet-300/10 text-violet-200"><i class="fa-solid fa-rectangle-ad" aria-hidden="true"></i></span>
-          <p class="text-sm font-semibold text-slate-200">Advertisement space</p>
-          <p class="mt-1 text-xs text-slate-500">Adsterra / Monetag placement</p>
+      <p id="modal-copy" class="mb-4 text-sm leading-6 text-slate-400">Continue through the sponsor placements to unlock and download your audio.</p>
+      <div class="ad-grid relative flex min-h-[250px] items-center justify-center overflow-hidden rounded-xl border border-violet-300/15 p-3">
+        <div class="banner-ad-300">
+          <script>
+            atOptions = {
+              'key' : 'b8b9396e1845254c4a4454bf365b1529',
+              'format' : 'iframe',
+              'height' : 250,
+              'width' : 300,
+              'params' : {}
+            };
+          </script>
+          <script src="https://bicea.org/22/b8b9396e1845254c4a4454bf365b1529"></script>
         </div>
-        <span class="absolute right-3 top-3 rounded border border-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">Ad</span>
+        <span class="pointer-events-none absolute right-3 top-3 rounded border border-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">Ad</span>
       </div>
       <div class="mt-5 flex items-center justify-between gap-4">
         <span id="timer-status" class="inline-flex items-center gap-2 text-sm text-slate-300" aria-live="polite"><i class="fa-regular fa-clock text-violet-300" aria-hidden="true"></i><span>Watch for 5 seconds</span></span>
@@ -149,7 +179,7 @@
   <div id="toast" class="fixed bottom-5 left-1/2 z-[60] hidden -translate-x-1/2 items-center gap-2 rounded-xl border border-emerald-200/20 bg-[#131b1b] px-4 py-3 text-sm text-emerald-100 shadow-2xl" role="status" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span id="toast-message">Download ready. +300 characters unlocked.</span></div>
 
   <script>
-    const API_BASE = "https://boomview.pythonanywhere.com";
+    const API_BASE = "http://127.0.0.1:8000";
     const textInput = document.getElementById("text-input");
     const charCount = document.getElementById("char-count");
     const limitLabel = document.getElementById("limit-label");
@@ -330,6 +360,7 @@
     }
 
     function openAds() {
+      window.openAdsterraSmartlink();
       showRequestError();
       adError.textContent = "";
       adError.classList.add("hidden");
@@ -412,5 +443,8 @@
     updateCharacterCount();
     loadVoices();
   </script>
+  <script src="script.js"></script>
+  <script data-cfasync="false" src="https://bicea.org/14/0cbba6490eb73349365d6f6ee8fafc87"></script>
+  <script data-cfasync="false" src="https://afders.org/1/420117a603b7ef395c3481dd7356f372"></script>
 </body>
 </html>
